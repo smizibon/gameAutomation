@@ -1,8 +1,28 @@
 import { Before, After, Status } from "@cucumber/cucumber";
 import { Builder } from "selenium-webdriver";
+import chrome from "selenium-webdriver/chrome.js";
+import { fileURLToPath } from "url";
+import { dirname, join } from "path";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const driverPath = join(__dirname, "../../drivers/chromedriver");
 
 let passedScenarios = [];
 let driver;
+
+Before(async function () {
+  try {
+    const service = new chrome.ServiceBuilder(driverPath);
+    this.driver = await new Builder()
+      .forBrowser("chrome")
+      .setChromeService(service)
+      .build();
+  } catch (error) {
+    console.error("Error creating WebDriver:", error);
+    throw error;
+  }
+});
 
 After(async function (scenario) {
   try {
@@ -44,13 +64,4 @@ process.on("exit", () => {
     console.log(`Executed at: ${scenario.timestamp}`);
     console.log("----------------------------------------");
   });
-});
-
-Before(async function () {
-  try {
-    this.driver = await new Builder().forBrowser("chrome").build();
-  } catch (error) {
-    console.error("Error creating WebDriver:", error);
-    throw error;
-  }
 });
