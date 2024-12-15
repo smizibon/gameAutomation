@@ -1,0 +1,21 @@
+{
+  "name": "gameAutomation",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "cucumber-js",
+    "test:report": "cucumber-js --format html:cucumber-report.html"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@cucumber/cucumber": "^9.3.0",
+    "chai": "^4.3.7",
+    "chromedriver": "^112.0.0",
+    "mocha": "^10.2.0",
+    "selenium-webdriver": "^4.9.0"
+  }
+}
