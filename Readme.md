@@ -18,10 +18,10 @@ This project is an automated testing framework for web-based games using Seleniu
 - Chrome browser
 - Git
 
-## Installation
+## Installation and RUN the tests
 
 1. Clone the repository:
-   git clone <your-repository-url>
+   git clone git@github.com:smizibon/gameAutomation.git
    cd gameAutomation
 
 2. Install dependencies:
