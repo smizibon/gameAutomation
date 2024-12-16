@@ -1,4 +1,4 @@
-import { By } from "selenium-webdriver";
+import { By, until } from "selenium-webdriver";
 
 class GamePage {
   constructor(driver) {
@@ -7,8 +7,17 @@ class GamePage {
   }
 
   async isCanvasDisplayed() {
-    const canvas = await this.driver.findElement(this.canvasSelector);
-    return canvas.isDisplayed();
+    try {
+      const canvas = await this.driver.wait(
+        until.elementLocated(this.canvasSelector),
+        10000,
+        "Canvas element not found"
+      );
+      return await canvas.isDisplayed();
+    } catch (error) {
+      console.error("Error checking canvas display:", error);
+      throw error;
+    }
   }
 }
 

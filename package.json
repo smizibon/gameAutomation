@@ -1,7 +1,7 @@
 {
   "name": "gameAutomation",
   "version": "1.0.0",
-  "description": "",
+  "description": "This project is an automated testing framework for web-based games using Selenium WebDriver, Cucumber.js, and Node.js. It implements the Page Object Model (POM) design pattern and provides detailed test reporting capabilities.",
   "main": "index.js",
   "type": "module",
   "scripts": {
