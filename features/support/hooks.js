@@ -40,33 +40,69 @@ Before(async function () {
  */
 After(async function (scenario) {
   try {
+    // Get step results with proper status
+    const steps = scenario.pickle.steps.map((pickleStep, index, allSteps) => {
+      // Find the matching test step result
+      const testStep = scenario.testCase?.steps?.find(
+        (step) => step.pickleStepId === pickleStep.id
+      );
+
+      // Map the step type to Gherkin keyword
+      let keyword;
+      if (index > 0 && pickleStep.type === allSteps[index - 1].type) {
+        // If this step has the same type as the previous step, use "And"
+        keyword = "And ";
+      } else {
+        switch (pickleStep.type) {
+          case "Context":
+            keyword = "Given ";
+            break;
+          case "Action":
+            keyword = "When ";
+            break;
+          case "Outcome":
+            keyword = "Then ";
+            break;
+          default:
+            keyword = pickleStep.keyword || "And ";
+        }
+      }
+
+      return {
+        keyword: keyword,
+        text: pickleStep.text || "",
+        result: {
+          status: testStep?.result?.status || scenario.result.status,
+          message: testStep?.result?.message || scenario.result.message,
+        },
+      };
+    });
+
     if (scenario.result.status === Status.FAILED) {
       try {
-        // Take screenshot on failure
         const screenshot = await this.driver.takeScreenshot();
         this.attach(screenshot, "image/png");
-        // Store failed scenario details
         failedScenarios.push({
           name: scenario.pickle.name,
           feature: scenario.gherkinDocument.feature.name,
           timestamp: new Date().toISOString(),
           error: scenario.result.message,
+          steps: steps,
         });
       } catch (screenshotError) {
         console.error("Failed to take screenshot:", screenshotError);
       }
     } else if (scenario.result.status === Status.PASSED) {
-      // Store passed scenario details
       passedScenarios.push({
         name: scenario.pickle.name,
         feature: scenario.gherkinDocument.feature.name,
         timestamp: new Date().toISOString(),
+        steps: steps,
       });
     }
   } catch (error) {
     console.error("Error in After hook:", error);
   } finally {
-    // Ensure WebDriver is closed properly
     if (this.driver) {
       try {
         await this.driver.quit();
@@ -96,6 +132,29 @@ process.on("exit", () => {
       console.log(`Feature: ${scenario.feature}`);
       console.log(`Scenario: ${scenario.name}`);
       console.log(`Executed at: ${scenario.timestamp}`);
+
+      console.log("\nSteps:");
+      scenario.steps.forEach((step) => {
+        const status = step.result.status;
+        let icon;
+        switch (status) {
+          case "PASSED":
+            icon = "✓";
+            break;
+          case "FAILED":
+            icon = "✗";
+            break;
+          case "SKIPPED":
+            icon = "⚠";
+            break;
+          default:
+            icon = "-";
+        }
+        console.log(`${icon} ${step.keyword}${step.text}`);
+        if (status === "FAILED" && step.result.message) {
+          console.log(`  Error: ${step.result.message}`);
+        }
+      });
       console.log("----------------------------------------");
     });
   }
