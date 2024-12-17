@@ -14,7 +14,7 @@ This project is an automated testing framework for web-based games using Seleniu
 
 ## Prerequisites
 
-- Node.js (Latest LTS version recommended)
+- Node.js (20.16.0)
 - Chrome browser
 - Git
 
