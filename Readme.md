@@ -21,15 +21,15 @@ This project is an automated testing framework for web-based games using Seleniu
 ## Installation and RUN the tests
 
 1. Clone the repository:
-   git clone git@github.com:smizibon/gameAutomation.git
+   git clone https://github.com/smizibon/gameAutomation.git
    cd gameAutomation
 
 2. Install dependencies:
-   npm run setup:driver
    npm install
+   npm run setup:driver
 
 3. Run the tests:
-   npm run test
+   npm test
 
 ## Project Structure
 

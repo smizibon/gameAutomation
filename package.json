@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "setup:driver": "node scripts/setup-driver.js",
-    "test": "cucumber-js",
+    "test": "cucumber-js \"features/**/*.feature\" --import \"features/**/*.js\"",
     "test:report": "cucumber-js --format html:cucumber-report.html"
   },
   "keywords": [],
@@ -15,7 +15,7 @@
   "dependencies": {
     "@cucumber/cucumber": "^9.3.0",
     "chai": "^4.3.7",
-    "chromedriver": "^112.0.0",
+    "chromedriver": "^131.0.3",
     "mocha": "^10.2.0",
     "selenium-webdriver": "^4.9.0"
   }
