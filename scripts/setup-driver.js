@@ -5,14 +5,22 @@ import { fileURLToPath } from "url";
 import { dirname } from "path";
 import chromedriver from "chromedriver";
 
+// Get the current file's directory path
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-const driversDir = path.join(__dirname, "../drivers");
+// Define the absolute path for the drivers directory
+const driversDir = path.resolve(__dirname, "../drivers");
+
+// Log the directory path for verification
+console.log("Setting up drivers in directory:", driversDir);
 
 // Create drivers directory if it doesn't exist
 if (!fs.existsSync(driversDir)) {
   fs.mkdirSync(driversDir);
+  console.log("Created drivers directory:", driversDir);
+} else {
+  console.log("Drivers directory already exists:", driversDir);
 }
 
 // Download and copy ChromeDriver
