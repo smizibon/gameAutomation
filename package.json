@@ -1,5 +1,5 @@
 {
-  "name": "gameAutomation",
+  "name": "game-automation",
   "version": "1.0.0",
   "description": "This project is an automated testing framework for web-based games using Selenium WebDriver, Cucumber.js, and Node.js. It implements the Page Object Model (POM) design pattern and provides detailed test reporting capabilities.",
   "main": "index.js",
@@ -9,8 +9,15 @@
     "test": "cucumber-js \"features/**/*.feature\" --import \"features/**/*.js\"",
     "test:report": "cucumber-js --format html:cucumber-report.html"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "automation",
+    "testing",
+    "selenium",
+    "cucumber",
+    "game-testing",
+    "web-automation"
+  ],
+  "author": "Zibon",
   "license": "ISC",
   "dependencies": {
     "@cucumber/cucumber": "^9.3.0",

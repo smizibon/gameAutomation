@@ -82,17 +82,21 @@ Then("I should see the game interface", async function () {
 });
 
 // Step definition for verifying the leaderboard is ranked correctly
-Then("the leaderboard should be ranked correctly", async function () {
+Then("the leaderboard should be ranked {string}", async function (checkType) {
   try {
     // Wait for the leaderboard container to be present
     const leaderboardElement = await this.driver.wait(
       until.elementLocated(By.css('[data-testid="LEADERBOARD_CONTAINER"]')),
-      10000, // Wait up to 10 seconds
-      "Leaderboard container not found"
+      10000,
+      `Leaderboard container not found ${checkType}`
     );
 
     // Get the text content of the leaderboard
     const leaderboardText = await leaderboardElement.getText();
+
+    // Log raw leaderboard text for debugging
+    // console.log(`Raw leaderboard text ${checkType}:`, leaderboardText);
+
     // Split the text into lines and filter out empty lines
     const lines = leaderboardText
       .split("\n")
@@ -100,24 +104,96 @@ Then("the leaderboard should be ranked correctly", async function () {
 
     // Parse the leaderboard data into an array of scores
     const scores = [];
-    for (let i = 0; i < lines.length; i += 3) {
-      const username = lines[i];
-      const score = parseInt(lines[i + 1], 10);
-      const rank = parseInt(lines[i + 2], 10);
-      scores.push({ username, score, rank });
+    let currentEntry = {};
+
+    // Process each line
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+
+      // Skip the header
+      if (line === "LEADERBOARD") continue;
+
+      // If line contains "points", extract the score
+      if (line.includes("points")) {
+        currentEntry.score = parseInt(line, 10);
+        continue;
+      }
+
+      // If it's a number by itself, it's the rank
+      const num = parseInt(line, 10);
+      if (!isNaN(num) && line === num.toString()) {
+        currentEntry.rank = num;
+        if (currentEntry.username && currentEntry.score) {
+          scores.push({ ...currentEntry });
+          currentEntry = {};
+        }
+        continue;
+      }
+
+      // If we get here, it's a username
+      if (currentEntry.username) {
+        scores.push({ ...currentEntry });
+      }
+      currentEntry = { username: line };
     }
 
-    // Sort the scores in descending order
-    const sortedScores = [...scores].sort((a, b) => b.score - a.score);
+    // Add the last entry if it exists
+    if (currentEntry.username && currentEntry.score && currentEntry.rank) {
+      scores.push(currentEntry);
+    }
 
-    // Assert that the scores are sorted correctly
-    expect(scores).to.deep.equal(
-      sortedScores,
-      "Leaderboard is not ranked correctly"
+    // Filter out incomplete entries and the header
+    const validScores = scores.filter(
+      (score) =>
+        score.username &&
+        score.score &&
+        score.rank &&
+        score.username !== "LEADERBOARD"
     );
+
+    // First verification: Check if scores are in descending order
+    const sortedByScore = [...validScores].sort((a, b) => b.score - a.score);
+
+    // Second verification: Check if ranks match the sorted order
+    const correctlyRanked = validScores.every((score, index) => {
+      const expectedRank = index + 1;
+      const isRankCorrect = score.rank === expectedRank;
+      const isScoreCorrect = score.score === sortedByScore[index].score;
+
+      if (!isRankCorrect || !isScoreCorrect) {
+        console.log(`Ranking issue at position ${index + 1}:`, {
+          entry: score,
+          expectedRank,
+          actualRank: score.rank,
+          expectedScore: sortedByScore[index].score,
+          actualScore: score.score,
+        });
+      }
+
+      return isRankCorrect && isScoreCorrect;
+    });
+
+    // Assert both conditions
+    expect(
+      correctlyRanked,
+      `Leaderboard ranks do not match score order ${checkType}`
+    ).to.be.true;
+
+    expect(
+      validScores,
+      `Leaderboard scores are not in descending order ${checkType}`
+    ).to.deep.equal(sortedByScore);
+
+    // Log the leaderboard data once
+    console.log(`Leaderboard scores ${checkType}:`, {
+      current: validScores,
+      isCorrectlyRanked: correctlyRanked,
+    });
   } catch (error) {
-    // Log and rethrow any errors encountered
-    console.error("Error in leaderboard ranking step:", error);
+    console.error(
+      `Error in leaderboard ranking verification ${checkType}:`,
+      error
+    );
     throw error;
   }
 });
