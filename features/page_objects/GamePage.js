@@ -3,8 +3,9 @@ import { By, until, WebDriver } from "selenium-webdriver";
 class GamePage {
   constructor(driver) {
     this.driver = driver;
-    this.timeout = 30000;
+    this.timeout = 30000; // Default timeout for waiting operations
 
+    // Define selectors for elements on the page
     this.selectors = {
       canvas: By.css("canvas"),
       body: By.css("body"),
@@ -12,18 +13,22 @@ class GamePage {
     };
   }
 
+  // Method to find all elements with a data-testid attribute
   async findAllDataTestIds() {
     try {
+      // Wait for at least one element with data-testid to be located
       await this.driver.wait(
         until.elementLocated(By.css("[data-testid]")),
         this.timeout,
         "No data-testid elements found"
       );
 
+      // Find all elements with data-testid
       const elements = await this.driver.findElements(By.css("[data-testid]"));
       const dataTestIds = await Promise.all(
         elements.map(async (element) => {
           try {
+            // Wait until the element is enabled
             await this.driver.wait(
               async () => {
                 try {
@@ -36,6 +41,7 @@ class GamePage {
               "Element not interactive"
             );
 
+            // Retrieve attributes and properties of the element
             const testId = await element.getAttribute("data-testid");
             const isDisplayed = await element.isDisplayed();
             const tagName = await element.getTagName();
@@ -46,6 +52,7 @@ class GamePage {
               text = "No text content";
             }
 
+            // Return an object with element details
             return {
               testId,
               isDisplayed,
@@ -60,6 +67,7 @@ class GamePage {
         })
       );
 
+      // Filter out any null results
       return dataTestIds.filter((item) => item !== null);
     } catch (error) {
       console.error("Error finding data-testid elements:", error);
@@ -67,14 +75,17 @@ class GamePage {
     }
   }
 
+  // Method to wait for an element to be visible
   async waitForElementVisible(selector, timeout = this.timeout) {
     try {
+      // Wait for the element to be located
       await this.driver.wait(
         until.elementLocated(selector),
         timeout,
         `Element ${selector} not found`
       );
 
+      // Find the element and wait for it to be visible
       const element = await this.driver.findElement(selector);
       await this.driver.wait(
         until.elementIsVisible(element),
@@ -89,11 +100,14 @@ class GamePage {
     }
   }
 
+  // Method to check if the canvas element is ready
   async isCanvasReady() {
     try {
+      // Wait for the canvas element to be visible
       const canvas = await this.waitForElementVisible(this.selectors.canvas);
       if (!canvas) return false;
 
+      // Wait for the canvas to have non-zero dimensions
       await this.driver.wait(
         async () => {
           const width = await canvas.getAttribute("width");
@@ -104,6 +118,7 @@ class GamePage {
         "Canvas dimensions not set"
       );
 
+      // Log the canvas dimensions
       const width = await canvas.getAttribute("width");
       const height = await canvas.getAttribute("height");
       console.log(`Canvas dimensions: ${width}x${height}`);
@@ -114,6 +129,7 @@ class GamePage {
     }
   }
 
+  // Method to check if all basic elements are loaded
   async checkAllElementsLoaded() {
     const results = {
       success: true,
@@ -135,18 +151,11 @@ class GamePage {
       }
     }
 
+    // Find all elements with data-testid and store them
     const dataTestIds = await this.findAllDataTestIds();
-    console.log(`\nFound ${dataTestIds.length} elements with data-testid\n`);
+    results.dataTestIdElements = dataTestIds;
 
-    dataTestIds.forEach((item, index) => {
-      console.log(`${index + 1}. Element:`);
-      console.log(`   Data-TestID: ${item.testId}`);
-      console.log(`   Tag: <${item.tagName}>`);
-      console.log(`   Visible: ${item.isDisplayed}`);
-      console.log(`   Text: ${item.text}`);
-      console.log("-".repeat(50));
-    });
-
+    // Check if the canvas is ready if it is loaded
     if (results.loadedElements.includes("canvas")) {
       const isCanvasReady = await this.isCanvasReady();
       console.log(`\nCanvas ready for interaction: ${isCanvasReady}`);
